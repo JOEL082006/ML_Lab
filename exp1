@@ -1,0 +1,57 @@
+import pandas as pd
+
+# Load dataset
+data = pd.read_csv("trainingdata.csv")
+
+concepts = data.iloc[:, :-1].values
+target = data.iloc[:, -1].values
+
+def candidate_elimination(concepts, target):
+    # Initialize S and G
+    S = concepts[0].copy()
+    G = [["?" for _ in range(len(S))]]
+
+    print("\nInitial Specific Hypothesis S:")
+    print(S)
+
+    print("\nInitial General Hypothesis G:")
+    print(G)
+
+    # Iterate through all examples
+    for i in range(len(concepts)):
+        print("\n--------------------------------------------------")
+        print(f"Training Example {i+1}: {concepts[i]}  --> {target[i]}")
+
+        if target[i] == "Yes":   # Positive example
+            for j in range(len(S)):
+                if concepts[i][j] != S[j]:
+                    S[j] = "?"
+            G = [g for g in G if all(g[k] == "?" or g[k] == S[k] for k in range(len(S)))]
+
+        else:   # Negative example
+            new_G = []
+            for g in G:
+                for j in range(len(S)):
+                    if g[j] == "?" and S[j] != concepts[i][j]:
+                        temp = g.copy()
+                        temp[j] = S[j]
+                        new_G.append(temp)
+            G = new_G
+
+        print("Specific Hypothesis S:")
+        print(S)
+
+        print("General Hypothesis G:")
+        print(G)
+
+    return S, G
+
+# Run algorithm
+S_final, G_final = candidate_elimination(concepts, target)
+
+print("\n================ FINAL RESULT ================\n")
+print("Final Specific Hypothesis:")
+print(S_final)
+
+print("\nFinal General Hypothesis:")
+print(G_final)
